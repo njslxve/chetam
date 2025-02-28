@@ -3,15 +3,14 @@ package handlers
 import (
 	"chetam/internal/model"
 	"chetam/internal/validation"
-	"github.com/labstack/echo/v4"
 	"log/slog"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 type AuthInterface interface {
-	CreateUser(login string) (*model.User, error)
-	FindUserByLogin(login string) (*model.User, error)
-	Login(login, password string) (string, error)
+	CreateUser(model.RegisterRequest) (string, error)
 }
 
 func Register(logger *slog.Logger, auth AuthInterface) echo.HandlerFunc {
@@ -27,16 +26,15 @@ func Register(logger *slog.Logger, auth AuthInterface) echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest, err)
 		}
 
-		user, err := auth.FindUserByLogin(req.Login)
+		token, err := auth.CreateUser(req)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, err)
+			return c.JSON(http.StatusInternalServerError, err)
 		}
 
-		user, err := auth.CreateUser(req.Email, req.Login, req.Password)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, err)
-		}
-		return nil
+		var resp model.RegisterResponse
+		resp.Token = token
+
+		return c.JSON(http.StatusOK, resp)
 	}
 }
 

@@ -7,7 +7,7 @@ type RegisterRequest struct {
 }
 
 type RegisterResponse struct {
-	Token *string `json:"token,omitempty"`
+	Token string `json:"token,omitempty"`
 }
 
 type Error struct {

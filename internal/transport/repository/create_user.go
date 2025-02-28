@@ -1,12 +1,8 @@
 package repository
 
-import (
-	"chetam/internal/model"
-	"context"
-	"time"
-)
+import "context"
 
-func (r *Repository) CreateUser(email, login, password string) (model.User, error) {
+func (r *Repository) CreateUser(email, login, password string) error {
 	querry := qb.Insert("users").
 		Columns(
 			"login",
@@ -17,25 +13,20 @@ func (r *Repository) CreateUser(email, login, password string) (model.User, erro
 			login,
 			email,
 			password,
-		)
+		).
+		Suffix("returnig id")
 
 	sql, args, err := querry.ToSql()
 	if err != nil {
-		return model.User{}, err
+		return err
 	}
 
-	_, err = r.db.Exec(context.Background(), sql, args...)
+	var id int
+
+	err = r.db.QueryRow(context.Background(), sql, args...).Scan(&id)
 	if err != nil {
-		return model.User{}, err
+		return err
 	}
 
-	user := model.User{
-		Login:     login,
-		Email:     email,
-		Password:  password,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	return user, nil
+	return nil
 }
